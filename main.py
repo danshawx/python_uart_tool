@@ -101,20 +101,91 @@ class MyPyQT_Form(QMainWindow, Ui_MainWindow):
                 self.uart_timer_send.stop()
             self.uart_en_push_button.setText('打开串口')
 
+    # new add
+    def uart_send_check_value(self, data):
+        databit = self.databit_combo_box.currentText()
+        max_data = 0
+        if databit == '8':
+            max_data = 256
+        elif databit == '7':
+            max_data = 128
+        elif databit == '6':
+            max_data = 64
+        else:
+            max_data = 32
+
+        cin_temp = ''
+        for item in data.split(' '):
+            current_item = ''
+            item_int = -1
+            item_int = int(item, 16)
+            while item_int > (max_data - 1):
+                current_item = ' ' + hex(int(item_int % max_data)) + current_item
+                item_int = int(item_int / max_data)
+            if item_int != -1:
+                current_item = ' ' + hex(int(item_int % max_data)) + current_item
+            cin_temp += current_item
+
+        return cin_temp
+
+    def uart_send_hex_pack(self, item):
+        toSend = 0
+        databit = self.databit_combo_box.currentText()
+        if item != '':
+            toSend = int(item[2:], 16)
+
+            if toSend > 255 and databit == '8':
+                # print_time_stamp()  # print timestamp
+                # print_fatal(hex(toSend) + ' does not fit in a byte! This shouldn\'t happen!')
+                toSend = ''
+            elif toSend > 127 and databit == '7':
+                # print_time_stamp()  # print timestamp
+                # print_fatal(hex(toSend) + ' does not fit in 7 bits! This shouldn\'t happen!')
+                toSend = ''
+            elif toSend > 63 and databit == '6':
+                # print_time_stamp()  # print timestamp
+                # print_fatal(hex(toSend) + ' does not fit in 6 bits! This shouldn\'t happen!')
+                toSend = ''
+            elif toSend > 31 and databit == '5':
+                # print_time_stamp()  # print timestamp
+                # print_fatal(hex(toSend) + ' does not fit in 5 bits! This shouldn\'t happen!')
+                toSend = ''
+            return toSend
+        else:
+            return item
+
     def uart_send_push_button_cb(self):
         if self.uart_com_run_status == 0:
             return
         send_data = ''
         send_text = self.uart_send_show.toPlainText()
+        print("send_text")
+        print(send_text)
         if send_text == '':
             return
+
+        send_data_str = ''
+        send_str_list = 'send: '
         if self.send_hex_radio_button.isChecked() == True:  # 十六进制发送
-            hex_send_text = self.hex2bin(send_text.replace(' ', ''))
-            send_data = bytes(hex_send_text,encoding='utf-8')
+            # hex_send_text = self.hex2bin(send_text.replace(' ', ''))
+            send_data_str = self.uart_send_check_value(send_text)  # new add
+            print('send_data_str:')
+            print(send_data_str)
+            cin = send_data_str.strip()
+            toSend = 0
+            for item in cin.split(' '):
+                toSend = self.uart_send_hex_pack(item)
+                if toSend == '':
+                    continue
+                send_str_list += item
+                send_str_list += '\t'
+                send_data = toSend.to_bytes(1, 'little')
+                self.uart.uart_send_func(send_data)
+            # send_data = bytes(hex_send_text,encoding='utf-8')
+            print(send_str_list)
         else:
             send_data = send_text.encode()
-        self.uart.uart_send_func(send_data)
-
+            self.uart.uart_send_func(send_data)
 
     def uart_clear_rec_push_button_cb(self):
         self.uart_data_rec_count = 0
