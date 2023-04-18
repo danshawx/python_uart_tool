@@ -29,7 +29,7 @@ class Uart_Recv_Data_Thread(threading.Thread):
                     data = self.cur_self.recv_queue.get()
                     data_num = len(data)
                     if self.cur_self.uart_time_stamp_flag == 1:# 时间戳开关打开
-                        time = datetime.datetime.now().strftime('[%Y-%m-%d %H:%M:%S:%f]\r\n')
+                        time = datetime.datetime.now().strftime('[%Y-%m-%d %H:%M:%S:%f] ')
                     
                     if self.cur_self.uart_rec_hex_lock == 1:
                         data_list = []

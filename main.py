@@ -16,6 +16,11 @@ from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtGui import QIntValidator
 from PyQt5.QtCore import QTimer
 
+import datetime
+import logging
+
+from tool_log import tool_log
+
 class MyPyQT_Form(QMainWindow, Ui_MainWindow):
 
     uart_recv_updata_show_data_signal = pyqtSignal(str)
@@ -40,6 +45,9 @@ class MyPyQT_Form(QMainWindow, Ui_MainWindow):
         self.uart_timer_line_edit.setText('1000')
         self.uart_timer_send = QTimer()
         self.uart_timer_send.timeout.connect(self.uart_timer_send_cb)
+
+        #log init
+        self.log = tool_log(self)
 
         # 设定默认值
         self.baud_combo_box.setCurrentText(str(9600))
@@ -85,6 +93,7 @@ class MyPyQT_Form(QMainWindow, Ui_MainWindow):
             databit = self.databit_combo_box.currentText()
             checkbit = self.checkbit_combo_box.currentText()
             self.uart.uart_init(port, baud, stopbit, databit, checkbit)
+            self.log.tool_log_log(port + baud)
             if self.uart.err == -1:
                 self.uart_com_run_status = 0
                 win32api.MessageBox(0, port+"已被使用", "警告",win32con.MB_ICONWARNING)
@@ -92,6 +101,7 @@ class MyPyQT_Form(QMainWindow, Ui_MainWindow):
                 self.uart_com_run_status = 1
                 self.uart.open_uart_thread()
                 self.uart_en_push_button.setText('关闭串口')
+                self.log.tool_log_open_thread()
         else:
             self.uart_com_run_status = 0
             self.uart.close_uart_thread()
@@ -183,9 +193,18 @@ class MyPyQT_Form(QMainWindow, Ui_MainWindow):
                 self.uart.uart_send_func(send_data)
             # send_data = bytes(hex_send_text,encoding='utf-8')
             print(send_str_list)
+            if send_str_list != '':
+                send_data_list = 'send: '
+                send_data_list += send_text
+                self.log.tool_log_log(send_data_list)
         else:
             send_data = send_text.encode()
             self.uart.uart_send_func(send_data)
+            if send_data != '':
+                send_data_list = 'send: '
+                send_data_list += send_data
+                self.log.tool_log_log(send_data_list)
+                
 
     def uart_clear_rec_push_button_cb(self):
         self.uart_data_rec_count = 0
@@ -247,6 +266,13 @@ class MyPyQT_Form(QMainWindow, Ui_MainWindow):
 
 
     def update_uart_recv_show_cb(self, data):
+        print('update_uart_recv_show_cb data is :')
+        print(data)
+        rec_data_list = 'recive: '
+        rec_data_list += data
+        self.log.tool_log_log(rec_data_list)
+
+        data += '\n'
         self.uart_rec_show.insertPlainText(data)
         cursor = self.uart_rec_show.textCursor()
         self.uart_rec_show.moveCursor(cursor.End)
