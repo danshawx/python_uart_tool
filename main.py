@@ -93,6 +93,7 @@ class MyPyQT_Form(QMainWindow, Ui_MainWindow):
             databit = self.databit_combo_box.currentText()
             checkbit = self.checkbit_combo_box.currentText()
             self.uart.uart_init(port, baud, stopbit, databit, checkbit)
+            self.log.tool_log_init()
             self.log.tool_log_log(port + baud)
             if self.uart.err == -1:
                 self.uart_com_run_status = 0

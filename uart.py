@@ -38,9 +38,9 @@ class Uart_Recv_Data_Thread(threading.Thread):
                         #     data_list.append(hex(data_bytes[i])[2:].zfill(2))
 
                         for item in data:
-                            data_int = hex(item).resplace('0x', '')
-                            data_int = (cc.zfill(2)).upper
-                            data_list.append(data_int)
+                            cc = hex(item).replace('0x', '')
+                            cc = (cc.zfill(2)).upper()
+                            data_list.append(cc)
 
                         send_text_to_hex = ' '.join(data_list)
                         show_data += send_text_to_hex
@@ -66,7 +66,7 @@ class Uart_Recv_Data_Thread(threading.Thread):
                 if self.cur_self.uart_rec_hex_lock == 1:
                     buf = []
                     for item in recv_msg:
-                        buf.sppend(item)
+                        buf.append(item)
                     self.cur_self.recv_queue.put(buf)
                     print('recv_msg')
                     print(recv_msg)
