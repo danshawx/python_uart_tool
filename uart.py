@@ -48,7 +48,7 @@ class Uart_Recv_Data_Thread(threading.Thread):
                         show_data = data.decode()
                         # show_data = data
                     
-                    self.main_self.uart_recv_updata_show_data_signal.emit(time + show_data + '\r\n')
+                    self.main_self.uart_recv_updata_show_data_signal.emit(time + show_data)
 
                     # 统计接收字符的数量
                     self.main_self.uart_updata_recv_num_signal.emit(data_num)
